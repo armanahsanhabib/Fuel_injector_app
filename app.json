@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Fuel Injector",
-    "slug": "Fuel Injector",
+    "slug": "fuelinjectorapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,14 +20,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.arman0sheikh.Fuel Injector"
+      "package": "com.arman0sheikh.SmartSwitchApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "bf96ad76-cf60-4b31-9dcd-98fc7914051e"
+        "projectId": "6c581c92-874a-425e-bfdf-3710a351752a"
       }
     },
     "owner": "arman0sheikh",

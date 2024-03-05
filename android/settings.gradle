@@ -1,4 +1,4 @@
-rootProject.name = 'Fuel Injector'
+rootProject.name = 'SmartSwitchApp'
 
 dependencyResolutionManagement {
   versionCatalogs {

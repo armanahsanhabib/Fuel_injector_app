@@ -83,9 +83,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.arman0sheikh.Fuel Injector'
+    namespace 'com.arman0sheikh.SmartSwitchApp'
     defaultConfig {
-        applicationId 'com.arman0sheikh.Fuel Injector'
+        applicationId 'com.arman0sheikh.SmartSwitchApp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

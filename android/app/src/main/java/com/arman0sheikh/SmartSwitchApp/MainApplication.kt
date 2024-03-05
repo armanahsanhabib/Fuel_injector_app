@@ -1,4 +1,4 @@
-package com.arman0sheikh.Fuel Injector
+package com.arman0sheikh.SmartSwitchApp
 
 import android.app.Application
 import android.content.res.Configuration
