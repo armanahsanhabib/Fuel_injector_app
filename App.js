@@ -1,28 +1,26 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Button,
+  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
-  View,
+  View
 } from "react-native";
 import Toast from "react-native-simple-toast";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { WebView } from "react-native-webview";
 import init from "react_native_mqtt";
-import SwitchButton from "./components/SwitchButton";
 
 // here we're using hivemq.com as our mqtt platform
 // to create and find mqtt creadentials we've to go https://console.hivemq.cloud/
 // for more info please visit https://www.hivemq.com/public-mqtt-broker/
-const topic = "iot/remote-control";
-const topic2 = "iot/state";
-const mqtt_connection_uri =
-  "2604f5a910dd4fb8a95f9c302739ff6c.s2.eu.hivemq.cloud";
+const topic = "engine/fuel-injector";
+const mqtt_connection_uri = '2604f5a910dd4fb8a95f9c302739ff6c.s2.eu.hivemq.cloud';
 const mqtt_port = 8884;
 
 init({
@@ -31,79 +29,77 @@ init({
   defaultExpires: 1000 * 3600 * 24,
   enableCache: true,
   reconnect: true,
-  sync: {},
+  sync : {
+  }
 });
 
+function onConnect() {
+
+  client.subscribe(topic, { qos: 1 });
+
+}
+
+function onFailure() {
+
+  Toast.show("MQTT connection failed!", Toast.SHORT);
+
+}
+
+function publishMessage(message) {
+
+  const newMessage = new Paho.MQTT.Message(message);
+
+  newMessage.destinationName = topic;
+
+  client.send(newMessage);
+
+}
+
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    Toast.show("MQTT connection lost!", Toast.SHORT);
+  }
+}
+
+function onMessageArrived(message) {
+  // console.log(message.payloadString);
+}
+
+// mqtt connection related code
+const client = new Paho.MQTT.Client(mqtt_connection_uri, mqtt_port, "clientId-" + parseInt(Math.random() * 100, 10));
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = onMessageArrived;
+client.connect({ onSuccess:onConnect, onFailure: onFailure, useSSL: true, userName: "mainuddin01", password: "anjumkhan1995" });
+
+function Switch({ title, mode, state, onPress, style }) {
+  return (
+    <Pressable style={[styles.switchContainer, {backgroundColor: state ? "#29cfbc" : "#fff" }, { borderColor: state ? "#059669" : "#059669" }, { borderWidth: state ? 2 : 1 }, style]} onPress={() => onPress(mode)}>
+      <Text style={[styles.switchText, {color: state ? "#fff" : "#20a09e"}]}>{title}</Text>
+    </Pressable>
+  )
+}
+
 const App = () => {
-  const [apiData, setApiData] = useState({});
-  const [newClient, setNewClient] = useState();
   const [videoProxy, setVideoProxy] = useState("");
   const [videoPort, setVideoPort] = useState("");
   const [showLiveStream, setShowLiveStream] = useState(false);
+  const [mode, setMode] = useState({});
 
-  const initialize = () => {
-    function onConnect() {
-      client.subscribe(topic, { qos: 1 });
+  const handlePress = async data => {
 
-      publishMessage("get-state", topic2);
-    }
-
-    function onFailure() {
-      Toast.show("MQTT connection failed!", Toast.SHORT);
-    }
-
-    function publishMessage(message, topic = topic) {
-      const newMessage = new Paho.MQTT.Message(message);
-
-      newMessage.destinationName = topic;
-
-      client.send(newMessage);
-    }
-
-    function onConnectionLost(responseObject) {
-      if (responseObject.errorCode !== 0) {
-        Toast.show("MQTT connection lost!", Toast.SHORT);
-      }
-    }
-
-    function onMessageArrived(message) {
-      console.log(JSON.parse(message.payloadString));
-      setApiData(JSON.parse(message.payloadString));
-    }
-
-    // mqtt connection related code
-    const client = new Paho.MQTT.Client(
-      mqtt_connection_uri,
-      mqtt_port,
-      "clientId-" + parseInt(Math.random() * 100, 10)
-    );
-    client.onConnectionLost = onConnectionLost;
-    client.onMessageArrived = onMessageArrived;
-    client.connect({
-      onSuccess: onConnect,
-      onFailure: onFailure,
-      useSSL: true,
-      userName: "mainuddin01",
-      password: "anjumkhan1995",
-    });
-    setNewClient(client);
-  };
-
-  const handlePress = (data) => {
     try {
-      const newMessage = new Paho.MQTT.Message(JSON.stringify(data));
-
-      newMessage.destinationName = topic2;
-
-      newClient.send(newMessage);
+      
+      publishMessage(data);
+      
+      setMode(data);
+      
     } catch (errors) {
-      Toast.show("Something wen't wrong!", Toast.SHORT);
-    }
-  };
 
-  useEffect(() => {
-    initialize();
-  }, []);
+      Toast.show("Something went wrong!", Toast.SHORT);
+
+    }
+
+  }
 
   const handleSubmit = () => {
     // Here you can perform any necessary validation before updating the state
@@ -130,12 +126,12 @@ const App = () => {
     <View style={styles.appContainer}>
       <View style={styles.header}>
         <MaterialCommunityIcons
-          name="nintendo-switch"
+          name="engine-outline"
           style={styles.liveIcon}
           color="#fff"
-          size={24}
+          size={30}
         />
-        <Text style={styles.headerText}>Smart Switch App</Text>
+        <Text style={styles.headerText}>Fuel Injector App</Text>
       </View>
       <View style={styles.main}>
         {!showLiveStream ? (
@@ -236,19 +232,19 @@ const App = () => {
           style={[
             styles.headingRow,
             {
-              backgroundColor: "#bfdbfe",
+              backgroundColor: "#fed7aa",
               marginVertical: 5,
               borderWidth: 2,
-              borderColor: "#3b82f6",
+              borderColor: "#ea580c",
             },
           ]}
         >
           <MaterialCommunityIcons
-            name="chevron-triple-right"
+            name="check-all"
             color="#000"
             size={24}
           />
-          <Text style={[styles.headingText, { color: "#000" }]}>Switches</Text>
+          <Text style={[styles.headingText, { color: "#000" }]}>Mood Change Buttons</Text>
         </View>
         {/* Display SwitchButtons based on apiData */}
         <ScrollView
@@ -256,38 +252,10 @@ const App = () => {
           contentContainerStyle={styles.scrollViewContent}
         >
           <View style={styles.switchesContainer}>
-            {Object.keys(apiData).length !== 0 ? (
-              Object.keys(apiData).map((key) => (
-                <SwitchButton
-                  key={key}
-                  load={key}
-                  state={apiData[key]}
-                  onPress={handlePress}
-                />
-              ))
-            ) : (
-              <View style={{ flex: 1, alignItems: "center", marginTop: 100 }}>
-                <MaterialCommunityIcons
-                  name="cloud-alert"
-                  color="#f00"
-                  size={100}
-                />
-                <Text
-                  style={{
-                    color: "#f00",
-                    fontSize: 20,
-                    fontWeight: "bold",
-                    textAlign: "center",
-                  }}
-                >
-                  Failed to connect Raspberry pi server...
-                </Text>
-                <Text style={{ color: "#000", textAlign: "center" }}>
-                  Switches will be shown once its connected to Raspberry pi
-                  server!
-                </Text>
-              </View>
-            )}
+            <Switch title="Automatic mode" mode="auto" state={mode == "auto"} onPress={handlePress} />
+            <Switch title="Mode 1" mode="1" state={mode == "1"} onPress={handlePress} />
+            <Switch title="Mode 2" mode="2" state={mode == "2"} onPress={handlePress} />
+            <Switch title="Mode 3" mode="3" state={mode == "3"} onPress={handlePress} />
           </View>
         </ScrollView>
       </View>
@@ -309,8 +277,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 10,
+    paddingHorizontal: 5,
+    borderRadius: 5,
     // marginTop: 6,
   },
   headingText: {
@@ -323,7 +291,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     height: 50,
-    backgroundColor: "#5661f1",
+    backgroundColor: "#0d9488",
     paddingHorizontal: 5,
   },
   headerText: {
@@ -367,7 +335,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingTop: 5,
+    paddingTop: 8,
+    paddingHorizontal: 10
+  },
+  switchText: {
+    fontSize: 17,
+    fontWeight: "700",
+    marginTop: 2
+  },
+  switchContainer: {
+    width: "100%",
+    height: "20%",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    borderRadius: 10
   },
 });
 
